@@ -27,30 +27,33 @@ caminho_botao_settings = 'C:\\Users\\Gabriel Pimenta\\Desktop\\ReposGitHub\\Inmo
 caminho_botao_voltar = 'C:\\Users\\Gabriel Pimenta\\Desktop\\ReposGitHub\\InmoovO.S\\app\\assets\\exit_adm.png'  # Substitua pelo caminho do botão "Voltar" com \\
 
 # Define as dimensões dos botões
-largura_botao = 100
-altura_botao = 50
+largura_botao = 240
+altura_botao = 170
+
+# Define o espaçamento entre os botões
+espacamento = 30
 
 # Calcula a posição x inicial dos botões para centralizá-los
-posicao_x_inicial = (resolucao_tela[0] - (largura_botao * 2.5 + 20) * 4) // 2
+posicao_x_inicial = (resolucao_tela[0] - (largura_botao + espacamento) * 4) // 2
 
 # Define a posição y dos botões
 posicao_y = resolucao_tela[1] // 2
 
 # Carrega os botões redimensionados
 botao_pergunta = pygame.image.load(caminho_botao_pergunta)
-botao_pergunta = pygame.transform.scale(botao_pergunta, (int(largura_botao * 2.5), int(altura_botao * 2.5)))
+botao_pergunta = pygame.transform.scale(botao_pergunta, (largura_botao, altura_botao))
 
 botao_musica = pygame.image.load(caminho_botao_musica)
-botao_musica = pygame.transform.scale(botao_musica, (int(largura_botao * 2.5), int(altura_botao * 2.5)))
+botao_musica = pygame.transform.scale(botao_musica, (largura_botao, altura_botao))
 
 botao_factos = pygame.image.load(caminho_botao_factos)
-botao_factos = pygame.transform.scale(botao_factos, (int(largura_botao * 2.5), int(altura_botao * 2.5)))
+botao_factos = pygame.transform.scale(botao_factos, (largura_botao, altura_botao))
 
 botao_servos = pygame.image.load(caminho_botao_servos)
-botao_servos = pygame.transform.scale(botao_servos, (int(largura_botao * 2.5), int(altura_botao * 2.5)))
+botao_servos = pygame.transform.scale(botao_servos, (largura_botao, altura_botao))
 
 botao_settings = pygame.image.load(caminho_botao_settings)
-botao_settings = pygame.transform.scale(botao_settings, (int(largura_botao * 2.5), int(altura_botao * 2.5)))
+botao_settings = pygame.transform.scale(botao_settings, (largura_botao, altura_botao))
 
 botao_voltar = pygame.image.load(caminho_botao_voltar)
 botao_voltar = pygame.transform.scale(botao_voltar, (int(largura_botao * 0.2), int(altura_botao * 0.2)))
@@ -87,21 +90,21 @@ while rodando:
 
     # Desenha os botões na janela
     janela.blit(botao_pergunta, (posicao_x, posicao_y))
-    posicao_x += largura_botao * 2.5 + 20
+    posicao_x += largura_botao + espacamento
 
     janela.blit(botao_musica, (posicao_x, posicao_y))
-    posicao_x += largura_botao * 2.5 + 20
+    posicao_x += largura_botao + espacamento
 
     if administrador_ativo:
         janela.blit(botao_factos, (posicao_x, posicao_y))
-        posicao_x += largura_botao * 2.5 + 20
+        posicao_x += largura_botao + espacamento
 
     janela.blit(botao_servos, (posicao_x, posicao_y))
-    posicao_x += largura_botao * 2.5 + 20
+    posicao_x += largura_botao + espacamento
 
     if administrador_ativo:
         janela.blit(botao_settings, (posicao_x, posicao_y))
-        posicao_x += largura_botao * 2.5 + 20
+        posicao_x += largura_botao + espacamento
 
     # Desenha o botão de voltar na janela
     if administrador_ativo:
