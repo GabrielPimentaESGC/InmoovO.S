@@ -27,15 +27,14 @@ caminho_botao_settings = 'C:\\Users\\Gabriel Pimenta\\Desktop\\ReposGitHub\\Inmo
 caminho_botao_voltar = 'C:\\Users\\Gabriel Pimenta\\Desktop\\ReposGitHub\\InmoovO.S\\app\\assets\\exit_adm.png'  # Substitua pelo caminho do botão "Voltar" com \\
 
 # Define as dimensões dos botões
-largura_botao = 70
+largura_botao = 100
 altura_botao = 50
 
-# Define as posições dos botões
-posicao_x = (resolucao_tela[0] - ((largura_botao * 2.5 + 20) * 5)) // 2
-posicao_y = resolucao_tela[1] // 2
+# Calcula a posição x inicial dos botões para centralizá-los
+posicao_x_inicial = (resolucao_tela[0] - (largura_botao * 2.5 + 20) * 4) // 2
 
-# Calcula o espaçamento entre os botões
-espacamento = 1
+# Define a posição y dos botões
+posicao_y = resolucao_tela[1] // 2
 
 # Carrega os botões redimensionados
 botao_pergunta = pygame.image.load(caminho_botao_pergunta)
@@ -59,8 +58,8 @@ botao_voltar = pygame.transform.scale(botao_voltar, (int(largura_botao * 0.2), i
 # Calcula a posição do botão de voltar
 posicao_botao_voltar = (20, resolucao_tela[1] - altura_botao * 0.2 - 20)
 
-# Variável de controle do modo administrador
-modo_administrador = False
+# Define se o modo administrador está ativo
+administrador_ativo = False
 
 # Loop principal do jogo
 rodando = True
@@ -74,42 +73,42 @@ while rodando:
     posicao_mouse = pygame.mouse.get_pos()
 
     # Verifica se o botão de voltar foi pressionado
-    if posicao_botao_voltar[0] <= posicao_mouse[0] <= posicao_botao_voltar[0] + int(largura_botao * 0.2) and posicao_botao_voltar[1] <= posicao_mouse[1] <= posicao_botao_voltar[1] + int(altura_botao * 0.2):
+    if administrador_ativo and posicao_botao_voltar[0] <= posicao_mouse[0] <= posicao_botao_voltar[0] + int(largura_botao * 0.2) and posicao_botao_voltar[1] <= posicao_mouse[1] <= posicao_botao_voltar[1] + int(altura_botao * 0.2):
         # Reduz o tamanho do botão de voltar em 5%
         botao_voltar_diminuido = pygame.transform.scale(botao_voltar, (int(largura_botao * 0.2 * 0.95), int(altura_botao * 0.2 * 0.95)))
     else:
         botao_voltar_diminuido = botao_voltar
 
-    # Lista de botões visíveis
-    botoes_visiveis = [botao_pergunta, botao_musica]
-
-    # Verifica se o modo administrador está ativado
-    if modo_administrador:
-        botoes_visiveis.extend([botao_factos, botao_settings])
-    else:
-        botoes_visiveis.extend([botao_servos, botao_voltar_diminuido])
-
-    # Calcula a largura total dos botões visíveis
-    largura_botoes_visiveis = sum([botao.get_width() for botao in botoes_visiveis])
-
-    # Calcula o espaçamento entre os botões visíveis
-    espacamento_visiveis = (resolucao_tela[0] - largura_botoes_visiveis) // (len(botoes_visiveis) - 1)
-
-    # Calcula a posição inicial dos botões visíveis
-    posicao_x_visiveis = (resolucao_tela[0] - largura_botoes_visiveis - espacamento_visiveis * (len(botoes_visiveis) - 1)) // 2
-    posicao_y_visiveis = resolucao_tela[1] // 2
-
     # Desenha a imagem de background na janela
     janela.blit(imagem_background, (0, 0))
 
-    # Desenha os botões visíveis na janela
-    posicao_x_atual = posicao_x_visiveis
-    for botao in botoes_visiveis:
-        janela.blit(botao, (posicao_x_atual, posicao_y_visiveis))
-        posicao_x_atual += botao.get_width() + espacamento_visiveis
+    # Calcula a posição x atual dos botões
+    posicao_x = posicao_x_inicial
 
-    # Atualiza a tela
-    pygame.display.flip()
+    # Desenha os botões na janela
+    janela.blit(botao_pergunta, (posicao_x, posicao_y))
+    posicao_x += largura_botao * 2.5 + 20
+
+    janela.blit(botao_musica, (posicao_x, posicao_y))
+    posicao_x += largura_botao * 2.5 + 20
+
+    if administrador_ativo:
+        janela.blit(botao_factos, (posicao_x, posicao_y))
+        posicao_x += largura_botao * 2.5 + 20
+
+    janela.blit(botao_servos, (posicao_x, posicao_y))
+    posicao_x += largura_botao * 2.5 + 20
+
+    if administrador_ativo:
+        janela.blit(botao_settings, (posicao_x, posicao_y))
+        posicao_x += largura_botao * 2.5 + 20
+
+    # Desenha o botão de voltar na janela
+    if administrador_ativo:
+        janela.blit(botao_voltar_diminuido, posicao_botao_voltar)
+
+    # Atualiza a janela do Pygame
+    pygame.display.update()
 
 # Encerra o Pygame
 pygame.quit()
