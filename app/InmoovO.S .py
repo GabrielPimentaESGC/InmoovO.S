@@ -14,17 +14,17 @@ resolucao_tela = (info_tela.current_w, info_tela.current_h)
 janela = pygame.display.set_mode(resolucao_tela, pygame.FULLSCREEN)
 
 # Carrega a imagem de background
-caminho_imagem = 'Desktop\\ReposGitHub\\InmoovO.S\\app\\assets\\background_default.png'
+caminho_imagem = 'background_default.png'
 imagem_background = pygame.image.load(caminho_imagem)
 imagem_background = pygame.transform.scale(imagem_background, resolucao_tela)
 
 # Carrega os sprites dos botões
-caminho_botao_pergunta = 'Desktop\\ReposGitHub\\InmoovO.S\\app\\assets\\buttons\\pt\\botao_pergunta.png'
-caminho_botao_musica = 'Desktop\\ReposGitHub\\InmoovO.S\\app\\assets\\buttons\\pt\\botao_musica.png'
-caminho_botao_factos = 'Desktop\\ReposGitHub\\InmoovO.S\\app\\assets\\buttons\\pt\\botao_factos.png'  # Substitua pelo caminho do botao do botão factos com \\
-caminho_botao_servos = 'Desktop\\ReposGitHub\\InmoovO.S\\app\\assets\\buttons\\pt\\botao_servo.png'  # Substitua pelo caminho do botao do botão servos com \\
-caminho_botao_settings = 'Desktop\\ReposGitHub\\InmoovO.S\\app\\assets\\buttons\\pt\\botao_settings.png'  # Substitua pelo caminho do botao do botão settings com \\
-caminho_botao_voltar = 'Desktop\\ReposGitHub\\InmoovO.S\\app\\assets\\exit_adm.png'  # Substitua pelo caminho do botão "Voltar" com \\
+caminho_botao_pergunta = 'InmoovO.S\\app\\assets\\buttons\\pt\\botao_pergunta.png'
+caminho_botao_musica = 'InmoovO.S\\app\\assets\\buttons\\pt\\botao_musica.png'
+caminho_botao_factos = 'InmoovO.S\\app\\assets\\buttons\\pt\\botao_factos.png'  # Substitua pelo caminho do botao do botão factos com \\
+caminho_botao_servos = 'InmoovO.S\\app\\assets\\buttons\\pt\\botao_servo.png'  # Substitua pelo caminho do botao do botão servos com \\
+caminho_botao_settings = 'InmoovO.S\\app\\assets\\buttons\\pt\\botao_settings.png'  # Substitua pelo caminho do botao do botão settings com \\
+caminho_botao_voltar = 'InmoovO.S\\app\\assets\\exit_adm.png'  # Substitua pelo caminho do botão "Voltar" com \\
 
 # Define as dimensões dos botões
 largura_botao = 240
