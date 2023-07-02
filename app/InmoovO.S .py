@@ -35,8 +35,8 @@ largura_botaoex = int(resolucao_tela[0] * 0.25)
 altura_botaoex = int(resolucao_tela[1] * 0.25)
 
 # Define as posições dos botões
-posicao_x = (resolucao_tela[0] - ((largura_botao * 3 + 100) * 3)) / 2
-posicao_y = resolucao_tela[1] / 2
+posicao_x = (resolucao_tela[0] - ((largura_botao * 2.5 + 20) * 5)) // 2
+posicao_y = resolucao_tela[1] // 2
 
 # Carrega os botões redimensionados
 botao_pergunta = pygame.image.load(caminho_botao_pergunta)
@@ -107,9 +107,6 @@ while executando:
             botao_factos_diminuido = botao_factos
     else:
         botao_factos_diminuido = None
-# Define as posições dos botões
-posicao_x = (resolucao_tela[0] - ((largura_botao * 2.5 + 20) * 5)) // 2
-posicao_y = resolucao_tela[1] // 2
 
 # Desenha os botões na janela
 janela.blit(botao_pergunta, (posicao_x, posicao_y))
