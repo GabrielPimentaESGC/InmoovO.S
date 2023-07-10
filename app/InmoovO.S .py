@@ -1,117 +1,129 @@
 import pygame
-import os
+import requests
+from io import BytesIO
 
-# Inicializa o Pygame
+# Initialize Pygame
 pygame.init()
 
-# Obtém informações sobre a tela atual
-info_tela = pygame.display.Info()
+# Get the screen size
+screen_info = pygame.display.Info()
+screen_width = screen_info.current_w
+screen_height = screen_info.current_h
 
-# Obtém a resolução da tela
-resolucao_tela = (info_tela.current_w, info_tela.current_h)
+# Set up the display
+screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
 
-# Cria a janela fullscreen com a resolução da tela
-janela = pygame.display.set_mode(resolucao_tela, pygame.FULLSCREEN)
+# Download the image from the URL
+image_url = "https://github.com/GabrielPimentaESGC/InmoovO.S/blob/main/app/assets/background_default.png?raw=true"
+response = requests.get(image_url)
+image_data = response.content
 
-# Carrega a imagem de background
-caminho_imagem = 'background_default.png'
-imagem_background = pygame.image.load(caminho_imagem)
-imagem_background = pygame.transform.scale(imagem_background, resolucao_tela)
+# Load the image from the downloaded data
+image = pygame.image.load(BytesIO(image_data))
 
-# Carrega os sprites dos botões
-caminho_botao_pergunta = 'InmoovO.S\\app\\assets\\buttons\\pt\\botao_pergunta.png'
-caminho_botao_musica = 'InmoovO.S\\app\\assets\\buttons\\pt\\botao_musica.png'
-caminho_botao_factos = 'InmoovO.S\\app\\assets\\buttons\\pt\\botao_factos.png'  # Substitua pelo caminho do botao do botão factos com \\
-caminho_botao_servos = 'InmoovO.S\\app\\assets\\buttons\\pt\\botao_servo.png'  # Substitua pelo caminho do botao do botão servos com \\
-caminho_botao_settings = 'InmoovO.S\\app\\assets\\buttons\\pt\\botao_settings.png'  # Substitua pelo caminho do botao do botão settings com \\
-caminho_botao_voltar = 'InmoovO.S\\app\\assets\\exit_adm.png'  # Substitua pelo caminho do botão "Voltar" com \\
+# Scale the image to fit the screen
+image = pygame.transform.scale(image, (screen_width, screen_height))
 
-# Define as dimensões dos botões
-largura_botao = 240
-altura_botao = 170
+# Download the button image from the URL
+button_url = "https://github.com/GabrielPimentaESGC/InmoovO.S/blob/main/app/assets/buttons/pt/botao_pergunta.png?raw=true"
+response = requests.get(button_url)
+button_data = response.content
 
-# Define o espaçamento entre os botões
-espacamento = 30
+# Load the button image from the downloaded data
+button_image = pygame.image.load(BytesIO(button_data))
+button_width = int(screen_width * 0.15)
+button_height = int(screen_height * 0.15)
+button_image = pygame.transform.scale(button_image, (button_width, button_height))
 
-# Calcula a posição x inicial dos botões para centralizá-los
-posicao_x_inicial = (resolucao_tela[0] - (largura_botao + espacamento) * 4) // 2
+# Define the initial and scaled sizes for the button
+button_scale_normal = (button_width, button_height)
+button_scale_hover = (int(button_width * 0.85), int(button_height * 0.85))
+button_scale_pressed = (int(button_width * 1.2), int(button_height * 1.2))
 
-# Define a posição y dos botões
-posicao_y = resolucao_tela[1] // 2
+# Set the initial button position
+button_pos = (int(screen_width * 0.5 - button_width * 0.5), int(screen_height * 0.5 - button_height * 0.5))
 
-# Carrega os botões redimensionados
-botao_pergunta = pygame.image.load(caminho_botao_pergunta)
-botao_pergunta = pygame.transform.scale(botao_pergunta, (largura_botao, altura_botao))
+# Define chatbox parameters
+chatbox_width = int(screen_width * 0.6)
+chatbox_height = int(screen_height * 0.6)
+chatbox_pos = (int(screen_width * 0.5 - chatbox_width * 0.5), int(screen_height * 0.5 - chatbox_height * 0.5))
+chatbox_color = (255, 255, 255)
+chatbox_border_color = (0, 0, 0)
+chatbox_border_width = 2
 
-botao_musica = pygame.image.load(caminho_botao_musica)
-botao_musica = pygame.transform.scale(botao_musica, (largura_botao, altura_botao))
+# Define chat bubble parameters
+bubble_margin = 20
+bubble_radius = 10
+user_bubble_color = (255, 255, 255)
+agent_bubble_color = (0, 0, 255)
+text_color = (0, 0, 0)
+font_size = 20
+font = pygame.font.SysFont(None, font_size)
 
-botao_factos = pygame.image.load(caminho_botao_factos)
-botao_factos = pygame.transform.scale(botao_factos, (largura_botao, altura_botao))
-
-botao_servos = pygame.image.load(caminho_botao_servos)
-botao_servos = pygame.transform.scale(botao_servos, (largura_botao, altura_botao))
-
-botao_settings = pygame.image.load(caminho_botao_settings)
-botao_settings = pygame.transform.scale(botao_settings, (largura_botao, altura_botao))
-
-botao_voltar = pygame.image.load(caminho_botao_voltar)
-botao_voltar = pygame.transform.scale(botao_voltar, (int(largura_botao * 0.2), int(altura_botao * 0.2)))
-
-# Calcula a posição do botão de voltar
-posicao_botao_voltar = (20, resolucao_tela[1] - altura_botao * 0.2 - 20)
-
-# Define se o modo administrador está ativo
-administrador_ativo = False
-
-# Loop principal do jogo
-rodando = True
-while rodando:
-    # Verifica os eventos do Pygame
+# Main game loop
+running = True
+is_chat_open = False  # Flag to check if the chatbox is open
+while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            rodando = False
+            running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            # Check if the button is pressed
+            if button_pos[0] <= event.pos[0] <= button_pos[0] + button_width and \
+                    button_pos[1] <= event.pos[1] <= button_pos[1] + button_height:
+                is_chat_open = True
 
-    # Obtém a posição do mouse
-    posicao_mouse = pygame.mouse.get_pos()
+    # Check for mouse hover on the button
+    mouse_pos = pygame.mouse.get_pos()
+    is_hover = button_pos[0] <= mouse_pos[0] <= button_pos[0] + button_width and \
+               button_pos[1] <= mouse_pos[1] <= button_pos[1] + button_height
 
-    # Verifica se o botão de voltar foi pressionado
-    if administrador_ativo and posicao_botao_voltar[0] <= posicao_mouse[0] <= posicao_botao_voltar[0] + int(largura_botao * 0.2) and posicao_botao_voltar[1] <= posicao_mouse[1] <= posicao_botao_voltar[1] + int(altura_botao * 0.2):
-        # Reduz o tamanho do botão de voltar em 5%
-        botao_voltar_diminuido = pygame.transform.scale(botao_voltar, (int(largura_botao * 0.2 * 0.95), int(altura_botao * 0.2 * 0.95)))
+    # Scale the button based on hover and press status
+    if is_hover:
+        button_image_scaled = pygame.transform.scale(button_image, button_scale_hover)
+    elif is_chat_open:
+        button_image_scaled = pygame.transform.scale(button_image, button_scale_pressed)
     else:
-        botao_voltar_diminuido = botao_voltar
+        button_image_scaled = pygame.transform.scale(button_image, button_scale_normal)
 
-    # Desenha a imagem de background na janela
-    janela.blit(imagem_background, (0, 0))
+    # Draw the image and button on the screen
+    screen.blit(image, (0, 0))
+    screen.blit(button_image_scaled, button_pos)
 
-    # Calcula a posição x atual dos botões
-    posicao_x = posicao_x_inicial
+    if is_chat_open:
+        # Draw the chatbox
+        pygame.draw.rect(screen, chatbox_border_color, (chatbox_pos[0], chatbox_pos[1], chatbox_width, chatbox_height),
+                         chatbox_border_width)
+        pygame.draw.rect(screen, chatbox_color,
+                         (chatbox_pos[0] + chatbox_border_width, chatbox_pos[1] + chatbox_border_width,
+                          chatbox_width - 2 * chatbox_border_width, chatbox_height - 2 * chatbox_border_width))
 
-    # Desenha os botões na janela
-    janela.blit(botao_pergunta, (posicao_x, posicao_y))
-    posicao_x += largura_botao + espacamento
+        # Draw user question bubble
+        user_question = "Olá! Qual é a sua pergunta?"
+        user_question_surface = font.render(user_question, True, text_color)
+        user_question_width = user_question_surface.get_width()
+        user_question_height = user_question_surface.get_height()
+        user_bubble_pos = (chatbox_pos[0] + bubble_margin, chatbox_pos[1] + bubble_margin)
+        pygame.draw.rect(screen, user_bubble_color,
+                         (user_bubble_pos[0], user_bubble_pos[1], user_question_width + 2 * bubble_margin,
+                          user_question_height + 2 * bubble_margin), bubble_radius)
+        screen.blit(user_question_surface, (user_bubble_pos[0] + bubble_margin, user_bubble_pos[1] + bubble_margin))
 
-    janela.blit(botao_musica, (posicao_x, posicao_y))
-    posicao_x += largura_botao + espacamento
+        # Draw agent answer bubble
+        agent_answer = "Aguarde, estou buscando uma resposta..."
+        agent_answer_surface = font.render(agent_answer, True, text_color)
+        agent_answer_width = agent_answer_surface.get_width()
+        agent_answer_height = agent_answer_surface.get_height()
+        agent_bubble_pos = (chatbox_pos[0] + bubble_margin,
+                            user_bubble_pos[1] + bubble_margin + user_question_height + bubble_margin)
+        pygame.draw.rect(screen, agent_bubble_color,
+                         (agent_bubble_pos[0], agent_bubble_pos[1], agent_answer_width + 2 * bubble_margin,
+                          agent_answer_height + 2 * bubble_margin), bubble_radius)
+        screen.blit(agent_answer_surface, (agent_bubble_pos[0] + bubble_margin, agent_bubble_pos[1] + bubble_margin))
 
-    if administrador_ativo:
-        janela.blit(botao_factos, (posicao_x, posicao_y))
-        posicao_x += largura_botao + espacamento
+        # TODO: Implement API integration to get responses and add them to the chatbox
 
-    janela.blit(botao_servos, (posicao_x, posicao_y))
-    posicao_x += largura_botao + espacamento
+    pygame.display.flip()
 
-    if administrador_ativo:
-        janela.blit(botao_settings, (posicao_x, posicao_y))
-        posicao_x += largura_botao + espacamento
-
-    # Desenha o botão de voltar na janela
-    if administrador_ativo:
-        janela.blit(botao_voltar_diminuido, posicao_botao_voltar)
-
-    # Atualiza a janela do Pygame
-    pygame.display.update()
-
-# Encerra o Pygame
+# Quit Pygame
 pygame.quit()
