@@ -1,6 +1,7 @@
 import pygame
 import urllib.request
 import io
+import openai
 
 # Configurações
 BACKGROUND_URL = "https://github.com/GabrielPimentaESGC/InmoovO.S/blob/main/app/assets/background_default.png?raw=true"
@@ -15,8 +16,9 @@ QUESTION_BOX_OUTLINE_WIDTH = 3
 TEXT_BUBBLE_COLOR_USER = (174, 214, 241)  # Cor azul clara para mensagens do usuário
 TEXT_BUBBLE_PADDING = 10
 TEXT_BUBBLE_MARGIN = 20
-TEXT_BUBBLE_FONT_SIZE = 30
+TEXT_BUBBLE_FONT_SIZE = 17
 TEXT_BUBBLE_FONT_COLOR = (0, 0, 0)  # Cor preta
+GPT_API_KEY = "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"
 
 # Inicialização do Pygame
 pygame.init()
@@ -47,6 +49,22 @@ text_bubbles = []
 font_question_box = pygame.font.Font(None, 32)
 font_text_bubble = pygame.font.Font(None, TEXT_BUBBLE_FONT_SIZE)
 
+# Define a API do OpenAI
+openai.api_key = GPT_API_KEY
+
+# Função para enviar uma pergunta para o ChatGPT e obter uma resposta
+def ask_openai(question):
+    prompt = "A partir de agora irás responder como um robô impresso em uma impressora de 3 dimensões chamado InMoov Plus feito pela equipe Choninhas coordenada pelo doutor Pimentinha e seus ajudantes, que são alunos da Escola Secundária Gago Coutinho em Portugal. Tu falas português de Portugal e alguém acaba de te fazer esta pergunta:"
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=prompt + " " + question + " [PARA_DE_COMPLETAR]",
+        max_tokens=1000,
+        temperature=0.7,
+        n=1,
+        stop=None,
+    )
+    return response.choices[0].text.strip().replace("[PARA_DE_COMPLETAR]", "")
+
 # Cria a janela em tela cheia
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
@@ -75,7 +93,11 @@ while running:
                     text_bubbles.clear()
             elif event.key == pygame.K_RETURN:
                 if menu_open and question_box_active and question_box_text:
+                    response_text = ask_openai(question_box_text)
                     text_bubbles.append((question_box_text, TEXT_BUBBLE_COLOR_USER))
+                    text_bubbles.append((response_text, TEXT_BUBBLE_COLOR_USER))
+                    print("Usuário:", question_box_text)
+                    print("ChatGPT:", response_text)
                     question_box_text = ""
             elif question_box_active:
                 if event.key == pygame.K_BACKSPACE:
@@ -100,7 +122,12 @@ while running:
         pygame.draw.rect(screen, QUESTION_BOX_COLOR, question_box, border_radius=10)
         pygame.draw.rect(screen, QUESTION_BOX_OUTLINE_COLOR, question_box, QUESTION_BOX_OUTLINE_WIDTH, border_radius=10)
         if question_box_active:
-            question_box_text_surface = font_question_box.render(question_box_text, True, (255, 255, 255))
+            question_text = question_box_text
+            if font_question_box.size(question_text)[0] > QUESTION_BOX_WIDTH - 30:
+                while font_question_box.size(question_text + "...")[0] > QUESTION_BOX_WIDTH - 30:
+                    question_text = question_text[:-1]
+                question_text += "..."
+            question_box_text_surface = font_question_box.render(question_text, True, (255, 255, 255))
             question_box_text_rect = question_box_text_surface.get_rect(center=question_box.center)
             screen.blit(question_box_text_surface, question_box_text_rect)
 
