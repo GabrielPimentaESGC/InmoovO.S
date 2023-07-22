@@ -2,6 +2,8 @@ import pygame
 import urllib.request
 import io
 import openai
+import sys
+from collections import deque
 
 # Configurações
 BACKGROUND_URL = "https://github.com/GabrielPimentaESGC/InmoovO.S/blob/main/app/assets/background_default.png?raw=true"
@@ -42,7 +44,7 @@ button_current_scale = 1.0
 menu_open = False
 question_box = pygame.Rect((screen_width - QUESTION_BOX_WIDTH) // 2, 60, QUESTION_BOX_WIDTH, QUESTION_BOX_HEIGHT)
 question_box_active = False
-question_box_text = ""
+question_queue = deque(maxlen=50)
 text_bubbles = []
 
 # Define as fontes
@@ -68,42 +70,68 @@ def ask_openai(question):
 # Cria a janela em tela cheia
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
+# Constants for the window and textbox dimensions
+WINDOW_WIDTH, WINDOW_HEIGHT = 500, 500
+TEXTBOX_WIDTH, TEXTBOX_HEIGHT = 200, 50
+OUTLINE_WIDTH = 2
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Font settings
+FONT_SIZE = 20
+FONT_COLOR = BLACK
+FONT_NAME = None  # Default font
+
+# Define the font
+font_question_box = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
+
+# Create a Rect object for the textbox
+textbox_rect = pygame.Rect((WINDOW_WIDTH - TEXTBOX_WIDTH) // 2, (WINDOW_HEIGHT - TEXTBOX_HEIGHT) // 2, TEXTBOX_WIDTH, TEXTBOX_HEIGHT)
+
+# Initialize the text input variables
+input_text = ""
+input_active = False
+
 # Loop principal do jogo
 running = True
 while running:
-    # Verifica eventos
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+        # Handle events for the text input box
+        elif event.type == pygame.KEYDOWN:
+            if menu_open and question_box_active:
+                if event.key == pygame.K_RETURN:
+                    if len(input_text.strip()) > 0:
+                        response_text = ask_openai(input_text)
+                        text_bubbles.append(("Usuário: " + input_text, TEXT_BUBBLE_COLOR_USER))
+                        text_bubbles.append(("ChatGPT: " + response_text, TEXT_BUBBLE_COLOR_USER))
+                        print("Usuário:", input_text)
+                        print("ChatGPT:", response_text)
+                        input_text = ""
+                        question_queue.clear()
+                elif event.key == pygame.K_BACKSPACE:
+                    input_text = input_text[:-1]
+                else:
+                    input_text += event.unicode
+
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:  # Botão esquerdo do mouse pressionado
+            if event.button == 1:  # Left mouse button pressed
                 if not menu_open:
                     button_rect = button_normal_image.get_rect()
                     button_rect.center = (screen_width // 2, screen_height // 2)
                     if button_rect.collidepoint(event.pos):
                         menu_open = True
                         question_box_active = True
-                        question_box_text = ""
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                if menu_open:
-                    menu_open = False
-                    question_box_active = False
-                    question_box_text = ""
-                    text_bubbles.clear()
-            elif event.key == pygame.K_RETURN:
-                if menu_open and question_box_active and question_box_text:
-                    response_text = ask_openai(question_box_text)
-                    text_bubbles.append((question_box_text, TEXT_BUBBLE_COLOR_USER))
-                    text_bubbles.append((response_text, TEXT_BUBBLE_COLOR_USER))
-                    print("Usuário:", question_box_text)
-                    print("ChatGPT:", response_text)
-                    question_box_text = ""
-            elif question_box_active:
-                if event.key == pygame.K_BACKSPACE:
-                    question_box_text = question_box_text[:-1]
+                        input_text = ""
+                        question_queue.clear()
                 else:
-                    question_box_text += event.unicode
+                    if question_box_active:
+                        if not textbox_rect.collidepoint(event.pos):
+                            question_box_active = False
 
     # Atualiza o estado do botão
     mouse_pos = pygame.mouse.get_pos()
@@ -122,14 +150,13 @@ while running:
         pygame.draw.rect(screen, QUESTION_BOX_COLOR, question_box, border_radius=10)
         pygame.draw.rect(screen, QUESTION_BOX_OUTLINE_COLOR, question_box, QUESTION_BOX_OUTLINE_WIDTH, border_radius=10)
         if question_box_active:
-            question_text = question_box_text
-            if font_question_box.size(question_text)[0] > QUESTION_BOX_WIDTH - 30:
-                while font_question_box.size(question_text + "...")[0] > QUESTION_BOX_WIDTH - 30:
-                    question_text = question_text[:-1]
-                question_text += "..."
+            question_text = ''.join(question_queue)
             question_box_text_surface = font_question_box.render(question_text, True, (255, 255, 255))
             question_box_text_rect = question_box_text_surface.get_rect(center=question_box.center)
             screen.blit(question_box_text_surface, question_box_text_rect)
+            # Desenha um quadrado para representar o limite imaginário
+            limit_square = pygame.Rect((screen_width - QUESTION_BOX_WIDTH) // 2 + 30, question_box.y, QUESTION_BOX_WIDTH - 60, QUESTION_BOX_HEIGHT)
+            pygame.draw.rect(screen, (255, 0, 0), limit_square, 2)
 
     # Desenha as text bubbles
     text_bubble_y = question_box.bottom + TEXT_BUBBLE_MARGIN
@@ -145,6 +172,26 @@ while running:
         text_rect = text_surface.get_rect(center=bubble_rect.center)
         screen.blit(text_surface, text_rect)
         text_bubble_y += bubble_rect.height + TEXT_BUBBLE_MARGIN
+
+    # Draw the question box
+    pygame.draw.rect(screen, QUESTION_BOX_COLOR, question_box, border_radius=10)
+    pygame.draw.rect(screen, QUESTION_BOX_OUTLINE_COLOR, question_box, QUESTION_BOX_OUTLINE_WIDTH, border_radius=10)
+
+    if question_box_active:
+        # Draw the text input box
+        pygame.draw.rect(screen, WHITE, textbox_rect)
+        pygame.draw.rect(screen, BLACK, textbox_rect, OUTLINE_WIDTH)
+
+        # Render the input text
+        input_text_surface = font_question_box.render(input_text, True, FONT_COLOR)
+        input_text_rect = input_text_surface.get_rect(center=textbox_rect.center)
+        screen.blit(input_text_surface, input_text_rect)
+
+        # Draw a blinking cursor
+        if pygame.time.get_ticks() % 1000 < 500:
+            cursor_surface = font_question_box.render('|', True, FONT_COLOR)
+            cursor_rect = cursor_surface.get_rect(center=(input_text_rect.right + 10, input_text_rect.centery))
+            screen.blit(cursor_surface, cursor_rect)
 
     # Esconde o botão se o menu estiver aberto
     if menu_open:
