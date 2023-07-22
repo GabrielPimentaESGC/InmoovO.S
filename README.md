@@ -1,10 +1,14 @@
 # Inmoov O.S
 
 A fazer:
--Menu principal
---Sprites (Feito)
---Botão interativo
--Menu Perguntas
---Textbox
---Textbubbles
---Integração Api
+<br>
+-Menu principal<br>
+--Sprites (Feito)<br>
+--Botão interativo<br>
+<br>
+<br>
+<br>
+-Menu Perguntas<br>
+--Textbox <br>
+--Textbubbles <br>
+--Integração Api <br>
