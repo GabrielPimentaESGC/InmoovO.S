@@ -1,2 +1,10 @@
 # Inmoov O.S
-I am a coding student in Portugal and i am building a open source operating system in pythton for inmoov
+
+A fazer:
+-Menu principal
+--Sprites (Feito)
+--Botão interativo
+-Menu Perguntas
+--Textbox
+--Textbubbles
+--Integração Api
