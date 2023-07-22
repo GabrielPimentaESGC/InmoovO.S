@@ -7,8 +7,7 @@ A fazer:
 --Botão interativo<br>
 <br>
 <br>
-<br>
--Menu Perguntas<br>
---Textbox <br>
---Textbubbles <br>
---Integração Api <br>
+--Menu Perguntas<br>
+---Textbox <br>
+---Textbubbles <br>
+---Integração Api <br>
