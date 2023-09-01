@@ -1,213 +1,128 @@
 import pygame
-import urllib.request
-import io
-import openai
-import sys
-from collections import deque
-
-# Configurações
-BACKGROUND_URL = "https://github.com/GabrielPimentaESGC/InmoovO.S/blob/main/app/assets/background_default.png?raw=true"
-BUTTON_NORMAL_URL = "https://github.com/GabrielPimentaESGC/InmoovO.S/blob/main/app/assets/buttons/pt/botao_pergunta.png?raw=true"
-BUTTON_HOVER_SCALE = 0.85
-BUTTON_PRESSED_SCALE = 1.15
-QUESTION_BOX_WIDTH = 750
-QUESTION_BOX_HEIGHT = 45
-QUESTION_BOX_COLOR = (89, 89, 89)  # Cor #595959
-QUESTION_BOX_OUTLINE_COLOR = (0, 0, 0)  # Cor preta
-QUESTION_BOX_OUTLINE_WIDTH = 3
-TEXT_BUBBLE_COLOR_USER = (174, 214, 241)  # Cor azul clara para mensagens do usuário
-TEXT_BUBBLE_PADDING = 10
-TEXT_BUBBLE_MARGIN = 20
-TEXT_BUBBLE_FONT_SIZE = 17
-TEXT_BUBBLE_FONT_COLOR = (0, 0, 0)  # Cor preta
-GPT_API_KEY = "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"
+import requests
+from io import BytesIO
 
 # Inicialização do Pygame
 pygame.init()
 
-# Obtém a resolução do monitor
-screen_info = pygame.display.Info()
-screen_width = screen_info.current_w
-screen_height = screen_info.current_h
-
-# Carrega as imagens do background e do botão
-background_image_data = urllib.request.urlopen(BACKGROUND_URL).read()
-background_image = pygame.image.load(io.BytesIO(background_image_data))
-button_normal_image_data = urllib.request.urlopen(BUTTON_NORMAL_URL).read()
-button_normal_image = pygame.image.load(io.BytesIO(button_normal_image_data))
-
-# Define as escalas inicial e atual do botão
-button_scale = 1.0
-button_current_scale = 1.0
-
-# Define o estado do menu
-menu_open = False
-question_box = pygame.Rect((screen_width - QUESTION_BOX_WIDTH) // 2, 60, QUESTION_BOX_WIDTH, QUESTION_BOX_HEIGHT)
-question_box_active = False
-question_queue = deque(maxlen=50)
-text_bubbles = []
-
-# Define as fontes
-font_question_box = pygame.font.Font(None, 32)
-font_text_bubble = pygame.font.Font(None, TEXT_BUBBLE_FONT_SIZE)
-
-# Define a API do OpenAI
-openai.api_key = GPT_API_KEY
-
-# Função para enviar uma pergunta para o ChatGPT e obter uma resposta
-def ask_openai(question):
-    prompt = "A partir de agora irás responder como um robô impresso em uma impressora de 3 dimensões chamado InMoov Plus feito pela equipe Choninhas coordenada pelo doutor Pimentinha e seus ajudantes, que são alunos da Escola Secundária Gago Coutinho em Portugal. Tu falas português de Portugal e alguém acaba de te fazer esta pergunta:"
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt + " " + question + " [PARA_DE_COMPLETAR]",
-        max_tokens=1000,
-        temperature=0.7,
-        n=1,
-        stop=None,
-    )
-    return response.choices[0].text.strip().replace("[PARA_DE_COMPLETAR]", "")
-
-# Cria a janela em tela cheia
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-
-# Constants for the window and textbox dimensions
-WINDOW_WIDTH, WINDOW_HEIGHT = 500, 500
-TEXTBOX_WIDTH, TEXTBOX_HEIGHT = 200, 50
-OUTLINE_WIDTH = 2
-
-# Colors
+# Definição de cores
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
-# Font settings
-FONT_SIZE = 20
-FONT_COLOR = BLACK
-FONT_NAME = None  # Default font
+# Configurações da janela em tela cheia
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+screen_width, screen_height = screen.get_size()
+pygame.display.set_caption("Menu Principal")
 
-# Define the font
-font_question_box = pygame.font.SysFont(FONT_NAME, FONT_SIZE)
+# URLs das imagens
+background_url = "https://github.com/GabrielPimentaESGC/InmoovO.S/raw/main/app/assets/background_default.png"
+button_urls = [
+    "https://github.com/GabrielPimentaESGC/InmoovO.S/raw/main/app/assets/buttons/pt/botao_musica.png",
+    "https://github.com/GabrielPimentaESGC/InmoovO.S/raw/main/app/assets/buttons/pt/botao_pergunta.png",
+    "https://github.com/GabrielPimentaESGC/InmoovO.S/raw/main/app/assets/buttons/pt/botao_factos.png",
+    "https://github.com/GabrielPimentaESGC/InmoovO.S/raw/main/app/assets/buttons/admin_mode.png",
+    "https://img.freepik.com/premium-vector/smart-house-logo-template-design-vector-emblem-design-concept-creative-symbol-icon_316488-1066.jpg"
+]
 
-# Create a Rect object for the textbox
-textbox_rect = pygame.Rect((WINDOW_WIDTH - TEXTBOX_WIDTH) // 2, (WINDOW_HEIGHT - TEXTBOX_HEIGHT) // 2, TEXTBOX_WIDTH, TEXTBOX_HEIGHT)
+# Carregando imagens
+print("Carregando imagens...")
+response = requests.get(background_url)
+background_image = pygame.image.load(BytesIO(response.content))
+print("Imagem de fundo carregada.")
 
-# Initialize the text input variables
-input_text = ""
-input_active = False
+button_images = []
+button_names = ["Música", "Perguntas", "Factos", "Admin", "Smart Home"]
 
-# Loop principal do jogo
+for i, url in enumerate(button_urls):
+    response = requests.get(url)
+    button_images.append(pygame.image.load(BytesIO(response.content)))
+    print(f"Imagem do botão {button_names[i]} carregada.")
+
+# Redimensionando botões
+button_width = 210  # Aumentei o tamanho dos botões
+button_height = 170  # Aumentei o tamanho dos botões
+for i in range(len(button_images)):
+    button_images[i] = pygame.transform.scale(button_images[i], (button_width, button_height))
+
+# Posições dos botões
+button_positions = [
+    (screen_width // 1.35 - button_width // 2, screen_height // 3 - button_height // 2),  # Botão de Factos
+    (screen_width // 4 - button_width // 2, 2 * screen_height // 6 - button_height // 2),  # Botão de Música
+    (screen_width // 2 - button_width // 2, 2 * screen_height // 6 - button_height // 2),  # Botão de Perguntas
+    (screen_width // 2.72 - button_width // 2, 4 * screen_height // 6 - button_height // 2),  # Botão de Admin
+    (screen_width // 1.6 - button_width // 2, 4 * screen_height // 6 - button_height // 2)  # Botão de Smart Home
+]
+
+# Variável para controlar o tamanho dos botões
+button_scale = [1.2] * len(button_images)  # Tamanho normal é 20% maior do que o tamanho atual
+
+# Variáveis para a animação
+animation_duration = 0.2  # Duração da animação em segundos
+frame_rate = 60  # Taxa de quadros por segundo
+frame_count = int(animation_duration * frame_rate)
+frame_delay = 1.0 / frame_rate
+
+is_animating = False  # Flag para controlar se uma animação está em andamento
+button_clicked = -1  # Índice do botão clicado (-1 significa nenhum botão clicado)
+
+# Variável para controlar o menu aberto (1 = Menu Principal)
+menu_aberto = 1
+
+print("Iniciando loop principal...")
 running = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            print("Fechando a janela...")
             running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN and not is_animating:
+            # Quando um botão é clicado, inicia a animação de redução
+            for i in range(len(button_images)):
+                button_x, button_y = button_positions[i]
+                if button_x < mouse_x < button_x + button_width and button_y < mouse_y < button_y + button_height:
+                    button_scale[i] = 0.9
+                    is_animating = True  # Define que uma animação está em andamento
+                    button_clicked = i  # Registra qual botão foi clicado
+                    if i == 2:  # Se o botão de Perguntas foi clicado, muda para o menu de Perguntas (por exemplo)
+                        menu_aberto = 2
+                        print(f"Executada animação de click no botão {button_names[i]}.")
 
-        # Handle events for the text input box
-        elif event.type == pygame.KEYDOWN:
-            if menu_open and question_box_active:
-                if event.key == pygame.K_RETURN:
-                    if len(input_text.strip()) > 0:
-                        response_text = ask_openai(input_text)
-                        text_bubbles.append(("Usuário: " + input_text, TEXT_BUBBLE_COLOR_USER))
-                        text_bubbles.append(("ChatGPT: " + response_text, TEXT_BUBBLE_COLOR_USER))
-                        print("Usuário:", input_text)
-                        print("ChatGPT:", response_text)
-                        input_text = ""
-                        question_queue.clear()
-                elif event.key == pygame.K_BACKSPACE:
-                    input_text = input_text[:-1]
-                else:
-                    input_text += event.unicode
+        elif event.type == pygame.MOUSEBUTTONUP and is_animating and button_clicked != -1:
+            # Quando o botão do mouse é liberado, remove a imagem do botão clicado da lista
+            button_x, button_y = button_positions[button_clicked]
+            if button_x < mouse_x < button_x + button_width and button_y < mouse_y < button_y + button_height:
+                if button_clicked != 2:  # Verifica se o botão de Perguntas não foi clicado
+                    button_images.pop(button_clicked)
+                    button_positions.pop(button_clicked)
+                    button_scale.pop(button_clicked)
+                print(f"Executada animação de voltar ao normal no botão {button_names[button_clicked]}.")
+            is_animating = False  # A animação foi concluída
+            button_clicked = -1  # Nenhum botão está mais clicado
 
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:  # Left mouse button pressed
-                if not menu_open:
-                    button_rect = button_normal_image.get_rect()
-                    button_rect.center = (screen_width // 2, screen_height // 2)
-                    if button_rect.collidepoint(event.pos):
-                        menu_open = True
-                        question_box_active = True
-                        input_text = ""
-                        question_queue.clear()
-                else:
-                    if question_box_active:
-                        if not textbox_rect.collidepoint(event.pos):
-                            question_box_active = False
-
-    # Atualiza o estado do botão
-    mouse_pos = pygame.mouse.get_pos()
-    button_rect = button_normal_image.get_rect()
-    button_rect.center = (screen_width // 2, screen_height // 2)
-    if button_rect.collidepoint(mouse_pos):
-        button_current_scale = BUTTON_HOVER_SCALE
-    else:
-        button_current_scale = button_scale
-
-    # Preenche a tela com a imagem de fundo
+    screen.fill(WHITE)
     screen.blit(background_image, (0, 0))
 
-    if menu_open:
-        # Desenha o menu de pergunta
-        pygame.draw.rect(screen, QUESTION_BOX_COLOR, question_box, border_radius=10)
-        pygame.draw.rect(screen, QUESTION_BOX_OUTLINE_COLOR, question_box, QUESTION_BOX_OUTLINE_WIDTH, border_radius=10)
-        if question_box_active:
-            question_text = ''.join(question_queue)
-            question_box_text_surface = font_question_box.render(question_text, True, (255, 255, 255))
-            question_box_text_rect = question_box_text_surface.get_rect(center=question_box.center)
-            screen.blit(question_box_text_surface, question_box_text_rect)
-            # Desenha um quadrado para representar o limite imaginário
-            limit_square = pygame.Rect((screen_width - QUESTION_BOX_WIDTH) // 2 + 30, question_box.y, QUESTION_BOX_WIDTH - 60, QUESTION_BOX_HEIGHT)
-            pygame.draw.rect(screen, (255, 0, 0), limit_square, 2)
+    if menu_aberto == 1:  # Menu Principal
+        # Verificar hover dos botões e desenhar botões
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        for i in range(len(button_images)):
+            button_x, button_y = button_positions[i]
 
-    # Desenha as text bubbles
-    text_bubble_y = question_box.bottom + TEXT_BUBBLE_MARGIN
-    for bubble_text, bubble_color in text_bubbles:
-        bubble_surface = font_text_bubble.render(bubble_text, True, TEXT_BUBBLE_FONT_COLOR)
-        bubble_rect = bubble_surface.get_rect()
-        bubble_rect.width += TEXT_BUBBLE_PADDING * 2
-        bubble_rect.height += TEXT_BUBBLE_PADDING * 2
-        bubble_rect.right = question_box.right
-        bubble_rect.y = text_bubble_y
-        pygame.draw.rect(screen, bubble_color, bubble_rect, border_radius=10)
-        text_surface = font_text_bubble.render(bubble_text, True, TEXT_BUBBLE_FONT_COLOR)
-        text_rect = text_surface.get_rect(center=bubble_rect.center)
-        screen.blit(text_surface, text_rect)
-        text_bubble_y += bubble_rect.height + TEXT_BUBBLE_MARGIN
+            if button_x < mouse_x < button_x + button_width and button_y < mouse_y < button_y + button_height:
+                if button_scale[i] < 1.2:
+                    button_scale[i] += 0.1
+                    print(f"Executada animação de hover no botão {button_names[i]}.")
+            else:
+                if button_scale[i] > 1.0:
+                    button_scale[i] -= 0.1
+                    print(f"Executada animação de voltar ao normal no botão {button_names[i]}.")
 
-    # Draw the question box
-    pygame.draw.rect(screen, QUESTION_BOX_COLOR, question_box, border_radius=10)
-    pygame.draw.rect(screen, QUESTION_BOX_OUTLINE_COLOR, question_box, QUESTION_BOX_OUTLINE_WIDTH, border_radius=10)
+            # Apenas desenha o botão se a escala não for zero
+            if button_scale[i] > 0:
+                button = pygame.transform.scale(button_images[i], (int(button_width * button_scale[i]), int(button_height * button_scale[i])))
+                screen.blit(button, (button_x + (button_width - int(button_width * button_scale[i])) // 2, button_y + (button_height - int(button_height * button_scale[i])) // 2))
 
-    if question_box_active:
-        # Draw the text input box
-        pygame.draw.rect(screen, WHITE, textbox_rect)
-        pygame.draw.rect(screen, BLACK, textbox_rect, OUTLINE_WIDTH)
-
-        # Render the input text
-        input_text_surface = font_question_box.render(input_text, True, FONT_COLOR)
-        input_text_rect = input_text_surface.get_rect(center=textbox_rect.center)
-        screen.blit(input_text_surface, input_text_rect)
-
-        # Draw a blinking cursor
-        if pygame.time.get_ticks() % 1000 < 500:
-            cursor_surface = font_question_box.render('|', True, FONT_COLOR)
-            cursor_rect = cursor_surface.get_rect(center=(input_text_rect.right + 10, input_text_rect.centery))
-            screen.blit(cursor_surface, cursor_rect)
-
-    # Esconde o botão se o menu estiver aberto
-    if menu_open:
-        button_rect_scaled = button_normal_image.get_rect()
-        button_current_scale = 0.0
-
-    # Desenha o botão
-    button_scaled_width = int(button_normal_image.get_width() * button_current_scale)
-    button_scaled_height = int(button_normal_image.get_height() * button_current_scale)
-    button_scaled_image = pygame.transform.scale(button_normal_image, (button_scaled_width, button_scaled_height))
-    button_rect_scaled = button_scaled_image.get_rect()
-    button_rect_scaled.center = (screen_width // 2, screen_height // 2)
-    screen.blit(button_scaled_image, button_rect_scaled)
-
-    # Atualiza a tela
     pygame.display.flip()
+    pygame.time.delay(int(frame_delay * 1000))
 
-# Encerra o Pygame
 pygame.quit()
